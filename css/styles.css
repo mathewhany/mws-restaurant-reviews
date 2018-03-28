@@ -81,13 +81,10 @@ footer {
 }
 
 /* ====================== Navigation ====================== */
-nav {
-  padding: 1em;
-  background-color: #252831;
-  text-align: center;
-}
-
 nav h1 {
+  text-align: center;
+  background-color: #252831;
+  padding: 1em;
   margin: auto;
 }
 
