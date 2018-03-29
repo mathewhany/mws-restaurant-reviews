@@ -81,14 +81,14 @@ footer {
 }
 
 /* ====================== Navigation ====================== */
-nav h1 {
+header h1 {
   text-align: center;
   background-color: #252831;
   padding: 1em;
   margin: auto;
 }
 
-nav h1 a {
+header h1 a {
   color: #fff;
   font-size: 14pt;
   font-weight: 200;
@@ -175,8 +175,7 @@ nav h1 a {
 
 .filter-options select:focus {
   outline: 0;
-  box-shadow: 0 0 5px 5px #ff7a81, 
-              0px 4px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 5px 5px #ff7a81, 0px 4px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* ====================== Restaurant Listing ====================== */
@@ -198,7 +197,7 @@ nav h1 a {
   margin: 10px 0;
   min-height: 380px;
   text-align: left;
-  box-shadow: 3px 4px 5px rgba(0, 0, 0, .1);
+  box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
 }
@@ -214,7 +213,7 @@ nav h1 a {
 
 #restaurants-list .restaurant-info {
   padding: 1.5em;
-  border: 2px solid #DDD;
+  border: 2px solid #ddd;
   border-top: 0;
   flex-grow: 1;
   display: flex;
@@ -240,7 +239,7 @@ nav h1 a {
 
 #restaurants-list li a {
   background-color: orange;
-  box-shadow: 4px 4px 6px rgba(0, 0, 0, .1);
+  box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.1);
   color: #fff;
   display: inline-block;
   font-size: 10pt;
@@ -257,7 +256,7 @@ nav h1 a {
 
 #restaurants-list li a:focus {
   outline: 0;
-  box-shadow: 0 0 5px 5px rgba(125, 158, 204, .6);
+  box-shadow: 0 0 5px 5px rgba(125, 158, 204, 0.6);
 }
 
 /* ====================== Restaurant Details ====================== */
@@ -337,7 +336,7 @@ nav h1 a {
   background-color: #fff;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, .1);
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
 }
 
 .review-header {
@@ -350,7 +349,7 @@ nav h1 a {
 .review-header p {
   color: #fff;
   margin: 0;
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .review-rating {
@@ -368,7 +367,7 @@ nav h1 a {
 
 .review-comments {
   margin: 15px 20px 25px;
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 #restaurant-hours {
@@ -409,7 +408,7 @@ nav,
   #reviews-list li {
     width: calc(100% / 3 - 10px);
   }
-  
+
   #restaurant-img-container {
     width: 60%;
   }
@@ -433,8 +432,29 @@ nav,
   body {
     background: #f3f3f3;
   }
-  .inside main, #breadcrumb {
+  .inside main,
+  #breadcrumb {
     width: 1200px;
     margin: auto;
   }
+}
+
+.skip-link {
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+  height: 1px;
+  width: 1px;
+  text-align: left;
+  overflow: hidden;
+}
+
+.skip-link:active,
+.skip-link:focus,
+.skip-link:hover {
+  left: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
 }
