@@ -1,0 +1,5 @@
+node_modules/
+dist/*
+!dist/img
+!dist/manifest.json
+yarn-error.log

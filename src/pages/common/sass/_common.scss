@@ -1,0 +1,149 @@
+body,
+td,
+th,
+p {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  color: #333;
+  line-height: 1.5;
+}
+
+body {
+  background-color: #fdfdfd;
+  margin: 0;
+  position: relative;
+}
+
+ul,
+li {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  color: #333;
+}
+
+a {
+  color: orange;
+  text-decoration: none;
+
+  img {
+    border: none 0px #fff;
+  }
+
+  &:hover,
+  &:focus {
+    color: #3397db;
+    text-decoration: none;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0 0 20px;
+}
+
+article,
+aside,
+canvas,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+
+header h1 {
+  text-align: center;
+  background-color: #252831;
+  padding: 1em;
+  margin: auto;
+
+  a {
+    color: #fff;
+    font-size: 14pt;
+    font-weight: 200;
+    letter-spacing: 10px;
+    text-transform: uppercase;
+  }
+}
+
+main {
+  background-color: #f3f3f3;
+  min-height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+footer {
+  background-color: #444;
+  color: #ddd;
+  font-size: 16px;
+  letter-spacing: 1px;
+  padding: 25px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ====================== Map ====================== */
+#map-container {
+  background-color: #d4d4d4;
+  max-height: 640px;
+
+  #static-map {
+    max-width: 100%;
+    display: block;
+    margin: auto;
+  }
+
+  #dynamic-map {
+    display: none;
+    height: 400px;
+  }
+}
+
+* {
+  /* To fix tons of problems */
+  box-sizing: border-box;
+}
+
+header,
+main,
+footer,
+nav,
+#breadcrumb,
+#map-container,
+#map,
+#restaurant-container,
+#reviews-container,
+#reviews-list {
+  width: 100%;
+}
+
+.skip-link {
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+  height: 1px;
+  width: 1px;
+  text-align: left;
+  overflow: hidden;
+
+  &:active,
+  &:focus,
+  &:hover {
+    left: 0;
+    top: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+  }
+}

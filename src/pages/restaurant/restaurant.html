@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Restaurant Info</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="description" content="High-quality reviews for restaurants.">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#df7b00">
+</head>
+
+<body class="inside">
+  <header>
+    <a href="#maincontent" class="skip-link">Skip to content</a>
+    <h1>
+      <a href="/">Restaurant Reviews</a>
+    </h1>
+    <nav>
+      <ul id="breadcrumb" aria-label="Breadcrumbs">
+        <li>
+          <a href="/">Home</a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="map-container" role="application" title="Google Maps">
+    <img id="static-map" class="lozad">
+    <div id="dynamic-map"></div>
+  </section>
+
+  <main id="maincontent">
+    <section id="restaurant-container">
+      <h2 id="restaurant-name"></h2>
+      <div id="restaurant-img-container">
+        <img id="restaurant-img" class="lozad" alt=''>
+        <p id="restaurant-cuisine"></p>
+      </div>
+      <div id="restaurant-details">
+        <p id="restaurant-address"></p>
+        <table id="restaurant-hours"></table>
+      </div>
+    </section>
+
+    <section id="reviews-container">
+      <h3>Reviews</h3>
+      <ul id="reviews-list"></ul>
+    </section>
+  </main>
+
+  <footer id="footer">
+    Copyright (c) 2017
+    <a href="/">
+      <strong>Restaurant Reviews</strong>
+    </a> All Rights Reserved.
+    <div>Icons made by
+      <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> from
+      <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by
+      <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank" rel="noopener">CC 3.0 BY</a>
+    </div>
+  </footer>
+</body>
+
+</html>
