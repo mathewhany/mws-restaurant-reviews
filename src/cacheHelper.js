@@ -1,55 +1,50 @@
 import idb from 'idb';
 
-export default class CacheHelper {
-  static get dbPromise() {
-    if (!navigator.serviceWorker) return Promise.resolve();
+const createDbPromise = () => {
+  /* eslint-disable no-fallthrough */
+  return idb.open('restaurant-reviews', 2, upgradeDB => {
+    switch (upgradeDB.version) {
+      case 2:
+        upgradeDB
+          .createObjectStore('reviews', {
+            keyPath: 'id',
+          })
+          .createIndex('restaurant_id', 'restaurant_id', {
+            unique: false,
+          });
+      case 1:
+        upgradeDB.createObjectStore('restaurants', { keyPath: 'id' });
+    }
+  });
+};
 
-    return idb.open('restaurant-reviews', 1, upgradeDB => {
-      switch (upgradeDB.version) {
-        case 1:
-          upgradeDB.createObjectStore('restaurants', { keyPath: 'id' });
-      }
-    });
-  }
+const dbPromise = !navigator.serviceWorker
+  ? Promise.resolve()
+  : createDbPromise();
 
-  static putRestaurants(restaurants) {
-    this.dbPromise.then(db => {
-      const tx = db.transaction('restaurants', 'readwrite');
-      const store = tx.objectStore('restaurants');
+const getStore = (name, write = false) => {
+  return dbPromise.then(db =>
+    db.transaction(name, write ? 'readwrite' : 'readonly').objectStore(name)
+  );
+};
 
-      restaurants.forEach(restaurant => {
-        store.put(restaurant);
-      });
+const get = (store, id) => getStore(store).then(store => store.get(Number(id)));
+const put = (store, object) =>
+  getStore(store, true).then(store => store.put(object));
+const getAll = store => getStore(store).then(store => store.getAll());
+const putAll = (storeName, objects) =>
+  getStore(storeName, true).then(store =>
+    objects.forEach(object => store.put(object))
+  );
 
-      return tx.complete;
-    });
-  }
+export const getRestaurants = () => getAll('restaurants');
+export const putRestaurants = restaurants => putAll('restaurants', restaurants);
+export const getRestaurantById = id => get('restaurants', id);
+export const putRestaurant = restaurant => put('restaurants', restaurant);
 
-  static getRestaurants() {
-    return this.dbPromise.then(db =>
-      db
-        .transaction('restaurants')
-        .objectStore('restaurants')
-        .getAll()
-    );
-  }
-
-  static getRestaurantById(id) {
-    return this.dbPromise.then(db =>
-      db
-        .transaction('restaurants')
-        .objectStore('restaurants')
-        .get(Number(id))
-    );
-  }
-
-  static putRestaurant(restaurant) {
-    return this.dbPromise.then(db => {
-      const tx = db.transaction('restaurants', 'readwrite');
-      const store = tx.objectStore('restaurants');
-
-      store.put(restaurant);
-      return tx.complete;
-    });
-  }
-}
+export const getReviewsByRestaurantId = restaurantId => {
+  return getStore('reviews').then(store =>
+    store.index('restaurant_id').getAll(Number(restaurantId))
+  );
+};
+export const putReviews = reviews => putAll('reviews', reviews);

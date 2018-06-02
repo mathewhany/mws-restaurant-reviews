@@ -1,209 +1,187 @@
-import CacheHelper from './cacheHelper';
+import * as CacheHelper from '~/cacheHelper';
 
 /**
- * Common database helper functions.
+ * API URL.
  */
-export default class DBHelper {
-  /**
-   * API URL.
-   */
-  static get API_URL() {
-    return 'http://localhost:1337';
+const API_URL = 'http://localhost:1337';
+
+// Cache fetch results in memory, to reduce the number of requests to the network and to IDB.
+const memoryCache = {};
+
+// Store current fetch requests to reuse them when needed.
+const currentlyFetching = {};
+
+const fetchAndCache = (url, putIntoCache, getFromCache) => {
+  // If this url is already being requested,
+  // just reuse the same request instead of creating a new one.
+  if (currentlyFetching[url]) {
+    console.warn('Reusing the same fetch request.');
+    return currentlyFetching[url];
   }
 
-  /**
-   * Fetch all restaurants.
-   */
-  static fetchRestaurants(callback) {
-    if (this.networkRestaurants) {
-      callback(null, this.networkRestaurants);
-    } else {
-      CacheHelper.getRestaurants().then(restaurants => {
-        if (!this.networkRestaurants) {
-          callback(null, restaurants);
-        }
-      });
+  currentlyFetching[url] = new Promise((resolve, reject) => {
+    if (memoryCache[url]) {
+      console.warn('Already stored in memory cache: ' + memoryCache[url]);
+      resolve(memoryCache[url]);
+      return;
     }
 
-    fetch(`${this.API_URL}/restaurants`)
+    fetch(url)
       .then(res => res.json())
-      .then(restaurants => {
-        this.networkRestaurants = restaurants;
-        CacheHelper.putRestaurants(restaurants);
-        callback(null, restaurants);
+      .then(results => {
+        console.info(`Network result [${url}]:`, results);
+        putIntoCache(results);
+        resolve(results);
       })
-      .catch(() => {
-        CacheHelper.getRestaurants()
-          .then(restaurants => {
-            callback(null, restaurants);
-          })
-          .catch(e => {
-            console.log(e);
-            callback('Request failed.', null);
-          });
-      });
-  }
+      .catch(() => getFromCache().then(resolve, reject));
+  }).then(results => {
+    // Store results in memory cache.
+    memoryCache[url] = results;
+    return results;
+  });
 
-  /**
-   * Fetch a restaurant by its ID.
-   */
-  static fetchRestaurantById(id, callback) {
-    fetch(`${this.API_URL}/restaurants/${id}`)
-      .then(res => res.json())
-      .then(restaurant => {
-        if (restaurant) {
-          CacheHelper.putRestaurant(restaurant);
-          callback(null, restaurant);
-        } else {
-          callback('Restaurant does not exist', null);
-        }
-      })
-      .catch(() => {
-        CacheHelper.getRestaurantById(id).then(restaurant => {
-          callback(null, restaurant);
-        }).catch(error => {
-          callback(error, null);
-        });
-      });
-  }
+  return currentlyFetching[url];
+};
 
-  /**
-   * Fetch restaurants by a cuisine type with proper error handling.
-   */
-  static fetchRestaurantByCuisine(cuisine, callback) {
-    // Fetch all restaurants  with proper error handling
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        // Filter restaurants to have only given cuisine type
-        const results = restaurants.filter(r => r.cuisine_type == cuisine);
-        callback(null, results);
-      }
-    });
-  }
+/**
+ * Fetch all restaurants.
+ */
+export const fetchRestaurants = () => {
+  return fetchAndCache(
+    `${API_URL}/restaurants`,
+    CacheHelper.putRestaurants,
+    CacheHelper.getRestaurants
+  );
+};
 
-  /**
-   * Fetch restaurants by a neighborhood with proper error handling.
-   */
-  static fetchRestaurantByNeighborhood(neighborhood, callback) {
-    // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        // Filter restaurants to have only given neighborhood
-        const results = restaurants.filter(r => r.neighborhood == neighborhood);
-        callback(null, results);
-      }
-    });
-  }
+/**
+ * Fetch a restaurant by its ID.
+ */
+export const fetchRestaurantAndReviewsById = id => {
+  return Promise.all([
+    fetchRestaurantById(id),
+    fetchReviewsByRestaurantId(id),
+  ]).then(([restaurant, reviews]) => {
+    restaurant.reviews = reviews;
+    return restaurant;
+  });
+};
 
-  /**
-   * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
-   */
-  static fetchRestaurantByCuisineAndNeighborhood(
-    cuisine,
-    neighborhood,
-    callback
-  ) {
-    // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        let results = restaurants;
-        if (cuisine != 'all') {
-          // filter by cuisine
-          results = results.filter(r => r.cuisine_type == cuisine);
-        }
-        if (neighborhood != 'all') {
-          // filter by neighborhood
-          results = results.filter(r => r.neighborhood == neighborhood);
-        }
-        // console.log(results);
-        callback(null, results);
-      }
-    });
-  }
+export const fetchRestaurantById = id => {
+  return fetchAndCache(
+    `${API_URL}/restaurants/${id}`,
+    CacheHelper.putRestaurant,
+    () => CacheHelper.getRestaurantById(id)
+  );
+};
 
-  /**
-   * Fetch all neighborhoods with proper error handling.
-   */
-  static fetchNeighborhoods(callback) {
-    // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        // Get all neighborhoods from all restaurants
-        const neighborhoods = restaurants.map(
-          (v, i) => restaurants[i].neighborhood
-        );
-        // Remove duplicates from neighborhoods
-        const uniqueNeighborhoods = neighborhoods.filter(
-          (v, i) => neighborhoods.indexOf(v) == i
-        );
-        callback(null, uniqueNeighborhoods);
-      }
-    });
-  }
+/**
+ * Fetch restaurants by a cuisine type.
+ */
+export const fetchRestaurantByCuisine = cuisine => {
+  return fetchRestaurants().then(restaurants =>
+    restaurants.filter(r => r.cuisine_type == cuisine)
+  );
+};
 
-  /**
-   * Fetch all cuisines with proper error handling.
-   */
-  static fetchCuisines(callback) {
-    // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        // Get all cuisines from all restaurants
-        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
-        // Remove duplicates from cuisines
-        const uniqueCuisines = cuisines.filter(
-          (v, i) => cuisines.indexOf(v) == i
-        );
-        callback(null, uniqueCuisines);
-      }
-    });
-  }
+/**
+ * Fetch restaurants by a neighborhood.
+ */
+export const fetchRestaurantByNeighborhood = neighborhood => {
+  return fetchRestaurants().then(restaurants =>
+    restaurants.filter(r => r.neighborhood == neighborhood)
+  );
+};
 
-  /**
-   * Restaurant page URL.
-   */
-  static urlForRestaurant(restaurant) {
-    return `./restaurant.html?id=${restaurant.id}`;
-  }
+/**
+ * Fetch restaurants by a cuisine and a neighborhood.
+ */
+export const fetchRestaurantByCuisineAndNeighborhood = (
+  cuisine,
+  neighborhood
+) => {
+  return fetchRestaurants().then(restaurants => {
+    let results = restaurants;
 
-  /**
-   * Restaurant image URL.
-   */
-  static imageUrlForRestaurant({ photograph: img }) {
-    return `/img/${img}_800w.jpg`;
-  }
+    // Filter by cuisine
+    if (cuisine != 'all') {
+      results = results.filter(r => r.cuisine_type == cuisine);
+    }
 
-  /**
-   * Generate a source set for the restaurant image.
-   */
-  static imageSrcsetForRestaurant({ photograph: img }) {
-    return `
-      /img/${img}_800w.jpg 800w, 
-      /img/${img}_640w.jpg 640w, 
-      /img/${img}_480w.jpg 480w`;
-  }
+    // Filter by neighborhood
+    if (neighborhood != 'all') {
+      results = results.filter(r => r.neighborhood == neighborhood);
+    }
 
-  /**
-   * Map marker for a restaurant.
-   */
-  static mapMarkerForRestaurant(restaurant, map) {
-    const marker = new google.maps.Marker({
-      position: restaurant.latlng,
-      title: restaurant.name,
-      url: DBHelper.urlForRestaurant(restaurant),
-      map: map,
-      animation: google.maps.Animation.DROP,
-    });
-    return marker;
-  }
-}
+    return results;
+  });
+};
+
+/**
+ * Fetch all neighborhoods.
+ */
+export const fetchNeighborhoods = () => {
+  return fetchRestaurants().then(restaurants =>
+    restaurants
+      // Get all neighborhoods from all restaurants
+      .map((v, i) => restaurants[i].neighborhood)
+      // Remove duplicates from neighborhoods
+      .filter((v, i, arr) => arr.indexOf(v) == i)
+  );
+};
+
+/**
+ * Fetch all cuisines.
+ */
+export const fetchCuisines = () => {
+  return fetchRestaurants().then(restaurants =>
+    restaurants
+      // Get all cuisines from all restaurants
+      .map((v, i) => restaurants[i].cuisine_type)
+      // Remove duplicates from cuisines
+      .filter((v, i, arr) => arr.indexOf(v) == i)
+  );
+};
+
+/**
+ * Fetch reviews of a restaurant by its id.
+ */
+export const fetchReviewsByRestaurantId = restaurantId => {
+  return fetchAndCache(
+    `${API_URL}/reviews/?restaurant_id=${restaurantId}`,
+    CacheHelper.putReviews,
+    () => CacheHelper.getReviewsByRestaurantId(restaurantId)
+  );
+};
+
+/**
+ * Restaurant page URL.
+ */
+export const urlForRestaurant = restaurant =>
+  `./restaurant.html?id=${restaurant.id}`;
+
+/**
+ * Restaurant image URL.
+ */
+export const imageUrlForRestaurant = ({ photograph }) =>
+  `/img/${photograph}_800w.jpg`;
+
+/**
+ * Generate a source set for the restaurant image.
+ */
+export const imageSrcsetForRestaurant = ({ photograph: img }) =>
+  `/img/${img}_800w.jpg 800w, 
+  /img/${img}_640w.jpg 640w, 
+  /img/${img}_480w.jpg 480w`;
+
+/**
+ * Map marker for a restaurant.
+ */
+export const mapMarkerForRestaurant = (restaurant, map) =>
+  new google.maps.Marker({
+    position: restaurant.latlng,
+    title: restaurant.name,
+    url: urlForRestaurant(restaurant),
+    map: map,
+    animation: google.maps.Animation.DROP,
+  });
