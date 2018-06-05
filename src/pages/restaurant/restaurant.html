@@ -33,7 +33,7 @@
   <main id="maincontent">
     <section id="restaurant-container">
       <h2 id="restaurant-name">
-        <button class="favorite-btn">Add to favorites</button>
+        <button class="btn favorite-btn">Add to favorites</button>
       </h2>
       <div id="restaurant-img-container">
         <img id="restaurant-img" class="lozad" alt=''>
@@ -47,35 +47,42 @@
 
     <section id="reviews-container">
       <h3>Reviews</h3>
-      <ul id="reviews-list">
-        <li class="review-container review-form">
-          <h4 class="review-header">Add a review</h4>
-          <form class="review-content">
-            <div class="review-form-field">
-              <label for="name">Name:</label>
-              <input type="text" id="name">
-            </div>
-            <div class="review-form-field">
-              <label for="rating">Rating:</label>
-              <select id="rating">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-            </div>
-            <div class="review-form-field">
-              <label for="comments">Comments:</label>
-              <textarea id="comments"></textarea>
-            </div>
-            <div class="review-form-field">
-              <button>Add your review</button>
-            </div>
-          </form>
-        </li>
-      </ul>
+
+      <ul id="reviews-list"></ul>
+
+      <div class="card">
+        <h4 class="card-header">Add a review</h4>
+        <form class="card-body" id="add-review-form">
+          <div id="form-msg">
+          </div>
+          <div class="review-form-field">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name">
+          </div>
+          <div class="review-form-field">
+            <label for="rating">Rating:</label>
+            <select id="rating" name="rating">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div class="review-form-field">
+            <label for="comments">Comments:</label>
+            <textarea id="comments" name="comments"></textarea>
+          </div>
+          <div class="review-form-field">
+            <button type="submit" class="btn btn-block">Add your review</button>
+          </div>
+        </form>
+      </div>
     </section>
+
+    <div id="offline-error">
+      You are currenltly offline! You can still use the app, post reviews and favorite restaurants.
+    </div>
   </main>
 
   <footer id="footer">

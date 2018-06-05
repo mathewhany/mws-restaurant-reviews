@@ -27,7 +27,7 @@
     @media screen and (min-width: 700px) {
       width: 48%;
     }
-    
+
     @media screen and (min-width: 1200px) {
       width: 540px;
     }
@@ -112,38 +112,8 @@
     }
 
     .controls {
-      margin-top: 32px;
-
-      a, button {
-        background-color: #df7b00;
-        box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.1);
-        color: #fff;
-        display: inline-block;
-        font-size: 19px;
-        font-weight: bold;
-        letter-spacing: 3px;
-        margin-bottom: 16px;
-        padding: 20px 30px;
-        text-align: center;
-        text-decoration: none;
-        text-transform: uppercase;
-        width: 100%;
-        border-radius: 10px;
-        border: 0;
-  
-        &:focus {
-          outline: 0;
-          box-shadow: 0 0 5px 5px rgba(125, 158, 204, 0.6);
-        }
-      }
-
-      .favorite-btn {
-        color: #df7b00;
-        border: 2px solid #df7b00;
-        background: #fff;
-      }
+      margin: 32px 0;
     }
-
 
     @media screen and (min-width: 1024px) {
       width: calc(100% / 3 - 10px);

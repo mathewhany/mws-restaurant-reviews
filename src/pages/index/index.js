@@ -1,6 +1,11 @@
 import 'intersection-observer';
 import lozad from 'lozad';
-import { loadDynamicMapOnClick, getMap } from '~/pages/common/js';
+import {
+  loadDynamicMapOnClick,
+  getMap,
+  updateFavoriteBtnUI,
+  toggleFavoriteBtn,
+} from '~/pages/common/js';
 import * as DbHelper from '~/dbHelper';
 import './index.scss';
 
@@ -65,7 +70,7 @@ const fetchCuisines = () => {
 /**
  * Set cuisines HTML.
  */
-const fillCuisinesHTML = (cuisines) => {
+const fillCuisinesHTML = cuisines => {
   const select = document.getElementById('cuisines-select');
 
   cuisines.forEach(cuisine => {
@@ -156,16 +161,19 @@ const createRestaurantHTML = restaurant => {
 
   const controls = document.createElement('div');
   controls.className = 'controls';
-   
+
   const more = document.createElement('a');
+  more.className = 'btn btn-block';
   more.innerHTML = 'View Details';
   more.setAttribute('aria-label', `View details about ${restaurant.name}`);
   more.href = DbHelper.urlForRestaurant(restaurant);
   controls.append(more);
 
   const favorateBtn = document.createElement('button');
-  favorateBtn.className = 'favorite-btn';
+  favorateBtn.className = 'btn btn-block favorite-btn';
   favorateBtn.innerHTML = 'Add to favorites';
+  updateFavoriteBtnUI(favorateBtn, restaurant.is_favorite);
+  favorateBtn.addEventListener('click', e => toggleFavoriteBtn(e, restaurant.id));
   controls.append(favorateBtn);
 
   restaurantInfo.append(controls);
@@ -178,7 +186,7 @@ const createRestaurantHTML = restaurant => {
 /**
  * Add markers for current restaurants to the map.
  */
-const addMarkersToMap = (restaurants) => {
+const addMarkersToMap = restaurants => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DbHelper.mapMarkerForRestaurant(restaurant, getMap());

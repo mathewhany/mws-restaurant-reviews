@@ -1,4 +1,5 @@
 import * as CacheHelper from '~/cacheHelper';
+import { runOrPostpone } from '~/offlineHelper';
 
 /**
  * API URL.
@@ -72,7 +73,10 @@ export const fetchRestaurantById = id => {
     `${API_URL}/restaurants/${id}`,
     CacheHelper.putRestaurant,
     () => CacheHelper.getRestaurantById(id)
-  );
+  ).then(restaurant => {
+    restaurant.is_favorite = restaurant.is_favorite == 'true';
+    return restaurant;
+  });
 };
 
 /**
@@ -152,6 +156,51 @@ export const fetchReviewsByRestaurantId = restaurantId => {
     CacheHelper.putReviews,
     () => CacheHelper.getReviewsByRestaurantId(restaurantId)
   );
+};
+
+export const addReview = reviewData => {
+  CacheHelper.addReview(reviewData);
+
+  return runOrPostpone({
+    url: `${API_URL}/reviews`,
+    options: {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
+    },
+  });
+};
+
+export const removeReview = id => {
+  CacheHelper.removeReview(id);
+
+  return runOrPostpone({
+    url: `${API_URL}/reviews/${id}`,
+    options: {
+      method: 'DELETE',
+    },
+  });
+};
+
+export const favoriteRestaurant = id => {
+  CacheHelper.favoriteRestaurant(id);
+
+  return runOrPostpone({
+    url: `${API_URL}/restaurants/${id}/?is_favorite=true`,
+    options: {
+      method: 'PUT',
+    },
+  });
+};
+
+export const unfavoriteRestaurant = id => {
+  CacheHelper.unfavoriteRestaurant(id);
+
+  return runOrPostpone({
+    url: `${API_URL}/restaurants/${id}/?is_favorite=false`,
+    options: {
+      method: 'PUT',
+    },
+  });
 };
 
 /**

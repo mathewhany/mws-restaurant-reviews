@@ -1,7 +1,13 @@
 import timeago from 'timeago.js';
-import { loadDynamicMapOnClick } from '~/pages/common/js';
+import {
+  loadDynamicMapOnClick,
+  updateFavoriteBtnUI,
+  toggleFavoriteBtn,
+} from '~/pages/common/js';
 import * as DbHelper from '~/dbHelper';
 import './restaurant.scss';
+
+const favoriteBtn = document.querySelector('.favorite-btn');
 
 document.addEventListener('DOMContentLoaded', () => {
   fetchRestaurantFromURL().then(restaurant => {
@@ -13,6 +19,48 @@ document.addEventListener('DOMContentLoaded', () => {
       map.setZoom(16);
       map.setCenter(restaurant.latlng);
       DbHelper.mapMarkerForRestaurant(restaurant, map);
+    });
+
+    favoriteBtn.addEventListener('click', (e) =>
+      toggleFavoriteBtn(e, restaurant.id)
+    );
+
+    const addReviewForm = document.getElementById('add-review-form');
+
+    addReviewForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const formData = new FormData(addReviewForm);
+      formData.append('restaurant_id', restaurant.id);
+
+      let reviewData = {};
+      let errors = [];
+
+      formData.forEach((val, key) => {
+        if (val.trim() == '') {
+          errors.push(`The field '${key}' is required!`);
+          return;
+        }
+
+        reviewData[key] = val;
+      });
+
+      const formMsg = document.getElementById('form-msg');
+
+      if (errors.length == 0) {
+        DbHelper.addReview(reviewData).then(() => {
+          formMsg.style.display = 'block';
+          formMsg.classList.remove('error');
+          formMsg.innerHTML = navigator.onLine
+            ? 'Your review was published succesfully'
+            : 'Your review will be published when you are back online!';
+          addReviewToList(reviewData);
+          addReviewForm.reset();
+        });
+      } else {
+        formMsg.classList.add('error');
+        formMsg.innerHTML = errors.join('<br>');
+        formMsg.style.display = 'block';
+      }
     });
   });
 });
@@ -53,6 +101,8 @@ const fetchRestaurantFromURL = () => {
 const fillRestaurantHTML = restaurant => {
   const name = document.getElementById('restaurant-name');
   name.insertAdjacentText('afterbegin', restaurant.name);
+
+  updateFavoriteBtnUI(favoriteBtn, restaurant.is_favorite);
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -104,46 +154,61 @@ const fillReviewsHTML = reviews => {
     container.appendChild(noReviews);
     return;
   }
-  const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
-  });
-  container.appendChild(ul);
+  reviews.forEach(addReviewToList);
+};
+
+const addReviewToList = review => {
+  document.getElementById('reviews-list').appendChild(createReviewHTML(review));
 };
 
 /**
  * Create review HTML and add it to the webpage.
  */
 const createReviewHTML = review => {
-  const reviewContainer = document.createElement('div');
-  reviewContainer.className = 'review-container';
+  const li = document.createElement('li');
+
+  const reviewCard = document.createElement('div');
+  reviewCard.className = 'card';
+  li.appendChild(reviewCard);
+
+  const header = document.createElement('div');
+  header.className = 'card-header';
+  reviewCard.appendChild(header);
 
   const name = document.createElement('span');
   name.innerHTML = review.name;
   name.className = 'review-user';
+  header.appendChild(name);
 
   const date = document.createElement('span');
   date.innerHTML = timeago().format(review.createdAt);
   date.className = 'review-date';
+  header.appendChild(date);
 
-  const reviewHeader = document.createElement('div');
-  reviewHeader.className = 'review-header';
-  reviewHeader.appendChild(name);
-  reviewHeader.appendChild(date);
-  reviewContainer.appendChild(reviewHeader);
+  const body = document.createElement('div');
+  body.className = 'card-body';
+  reviewCard.appendChild(body);
 
-  const rating = document.createElement('p');
+  const rating = document.createElement('div');
   rating.innerHTML = `Rating: ${review.rating}`;
   rating.className = 'review-rating';
-  reviewContainer.appendChild(rating);
+  body.appendChild(rating);
 
-  const comments = document.createElement('p');
+  const comments = document.createElement('div');
   comments.innerHTML = review.comments;
-  comments.className = 'review-content';
-  reviewContainer.appendChild(comments);
+  body.appendChild(comments);
 
-  const li = document.createElement('li');
-  li.appendChild(reviewContainer);
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'btn btn-block delete-btn';
+  deleteBtn.innerHTML = 'Delete review';
+  deleteBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you wnat to delete this review?')) {
+      DbHelper.removeReview(review.id).then(() => {
+        li.remove();
+      });
+    }
+  });
+  body.appendChild(deleteBtn);
 
   return li;
 };

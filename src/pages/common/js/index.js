@@ -1,4 +1,5 @@
 import OfflinePluginRuntime from 'offline-plugin/runtime';
+import { favoriteRestaurant, unfavoriteRestaurant } from '~/dbHelper';
 
 OfflinePluginRuntime.install();
 
@@ -54,3 +55,41 @@ const loadDynamicMap = () => {
 };
 
 export const getMap = () => map;
+
+const offlineError = document.getElementById('offline-error');
+
+if (!navigator.onLine) {
+  offlineError.classList.add('shown');
+}
+
+window.addEventListener('offline', () => {
+  offlineError.classList.add('shown');
+});
+
+window.addEventListener('online', () => {
+  offlineError.classList.remove('shown');
+});
+
+export const updateFavoriteBtnUI = (el, isFavorite) => {
+  if (isFavorite) {
+    el.classList.add('active');
+    el.innerHTML = 'Remove from favorites';
+  } else {
+    el.classList.remove('active');
+    el.innerHTML = 'Add to favorites';
+  }
+};
+
+export const toggleFavoriteBtn = (e, id) => {
+  let isFavorite = e.target.classList.contains('active');
+
+  const promise = isFavorite
+    ? unfavoriteRestaurant(id)
+    : favoriteRestaurant(id);
+
+  return promise
+    .then(() => {
+      isFavorite = !isFavorite;
+      updateFavoriteBtnUI(e.target, isFavorite);
+    });
+};
