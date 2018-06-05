@@ -1,30 +1,32 @@
-const runPostponedActions = () => {
-  const actions = getPostponedActions();
-  localStorage.setItem('offline_actions', '');
-  actions.forEach(action => {
-    runOrPostpone(action);
+const runPostponedRequests = () => {
+  const requests = getPostponedRequests();
+  localStorage.setItem('postponed_requests', '');
+  requests.forEach(request => {
+    fetchOrPostpone(request.url, request.options);
   });
 };
 
-const getPostponedActions = () =>
-  JSON.parse(localStorage.getItem('offline_actions') || '[]');
+const getPostponedRequests = () =>
+  JSON.parse(localStorage.getItem('postponed_requests') || '[]');
 
-const postpone = action => {
+const postponeRequest = (url, options) => {
+  const request = { url, options };
+
   localStorage.setItem(
     'offline_actions',
-    JSON.stringify(getPostponedActions().concat(action))
+    JSON.stringify(getPostponedRequests().concat(request))
   );
 };
 
-export const runOrPostpone = action => {
+export const fetchOrPostpone = (url, options) => {
   if (navigator.onLine) {
-    console.log('Running: ', action);
-    return fetch(action.url, action.options);
+    console.log(`Offline Helper: Running fetch for '${url}'`);
+    return fetch(url, options);
   } else {
-    console.log('Postponing: ', action);
-    postpone(action);
+    console.log(`Offline Helper: Postponing fetch for '${url}'`);
+    postponeRequest(url, options);
     return Promise.resolve();
   }
 };
 
-window.addEventListener('online', runPostponedActions);
+window.addEventListener('online', runPostponedRequests);

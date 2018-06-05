@@ -1,5 +1,5 @@
 import * as CacheHelper from '~/cacheHelper';
-import { runOrPostpone } from '~/offlineHelper';
+import { fetchOrPostpone } from '~/offlineHelper';
 
 /**
  * API URL.
@@ -158,50 +158,34 @@ export const fetchReviewsByRestaurantId = restaurantId => {
   );
 };
 
-export const addReview = reviewData => {
-  CacheHelper.addReview(reviewData);
-
-  return runOrPostpone({
-    url: `${API_URL}/reviews`,
-    options: {
+export const addReview = reviewData =>
+  CacheHelper.addReview(reviewData).then(() =>
+    fetchOrPostpone(`${API_URL}/reviews`, {
       method: 'POST',
       body: JSON.stringify(reviewData),
-    },
-  });
-};
+    })
+  );
 
-export const removeReview = id => {
-  CacheHelper.removeReview(id);
-
-  return runOrPostpone({
-    url: `${API_URL}/reviews/${id}`,
-    options: {
+export const removeReview = id =>
+  CacheHelper.removeReview(id).then(() =>
+    fetchOrPostpone(`${API_URL}/reviews/${id}`, {
       method: 'DELETE',
-    },
-  });
-};
+    })
+  );
 
-export const favoriteRestaurant = id => {
-  CacheHelper.favoriteRestaurant(id);
-
-  return runOrPostpone({
-    url: `${API_URL}/restaurants/${id}/?is_favorite=true`,
-    options: {
+export const favoriteRestaurant = id =>
+  CacheHelper.favoriteRestaurant(id).then(() =>
+    fetchOrPostpone(`${API_URL}/restaurants/${id}/?is_favorite=true`, {
       method: 'PUT',
-    },
-  });
-};
+    })
+  );
 
-export const unfavoriteRestaurant = id => {
-  CacheHelper.unfavoriteRestaurant(id);
-
-  return runOrPostpone({
-    url: `${API_URL}/restaurants/${id}/?is_favorite=false`,
-    options: {
+export const unfavoriteRestaurant = id =>
+  CacheHelper.unfavoriteRestaurant(id).then(
+    fetchOrPostpone(`${API_URL}/restaurants/${id}/?is_favorite=false`, {
       method: 'PUT',
-    },
-  });
-};
+    })
+  );
 
 /**
  * Restaurant page URL.
