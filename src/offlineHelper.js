@@ -13,7 +13,7 @@ const postponeRequest = (url, options) => {
   const request = { url, options };
 
   localStorage.setItem(
-    'offline_actions',
+    'postponed_requests',
     JSON.stringify(getPostponedRequests().concat(request))
   );
 };
